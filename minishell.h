@@ -6,7 +6,7 @@
 /*   By: tchalaou <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/05 15:15:54 by tchalaou          #+#    #+#             */
-/*   Updated: 2024/06/25 17:16:52 by tchalaou         ###   ########.fr       */
+/*   Updated: 2024/06/28 17:38:42 by tchalaou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,6 +55,7 @@ typedef struct s_msh
 	char	*infile;
 	char	*outfile;
 	int		here_doc;
+	int		trunc_out;
 	int		pipe_next;
 	int		in_fd;
 	int		out_fd;
@@ -63,17 +64,10 @@ typedef struct s_msh
 	struct s_msh	*prev;
 }		t_msh;
 
-typedef struct s_node
-{
-	t_token			token;
-	struct s_node	*left;
-	struct s_node	*right;
-}		t_node;
-
 t_token	*lexing(char *line);
 void	free_token(t_token **token);
 
-t_msh	*parsing(t_token *token);
+t_msh	*parsing(t_token **token);
 void	free_msh(t_msh **msh);
 
 int		array_size(char **array);

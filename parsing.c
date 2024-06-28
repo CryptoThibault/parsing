@@ -6,7 +6,7 @@
 /*   By: tchalaou <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/25 14:02:41 by tchalaou          #+#    #+#             */
-/*   Updated: 2024/06/25 17:15:05 by tchalaou         ###   ########.fr       */
+/*   Updated: 2024/06/28 17:47:32 by tchalaou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@ t_msh	*create_msh(int index)
 	msh->infile = NULL;
 	msh->outfile = NULL;
 	msh->here_doc = 0;
+	msh->trunc_out = 0;
 	msh->pipe_next = 0;
 	msh->in_fd = -1;
 	msh->out_fd = -1;
@@ -32,23 +33,84 @@ t_msh	*create_msh(int index)
 	return (msh);
 }
 
-void	fill_msh(t_msh *msh, t_token **token)
+void	fill_command(t_msh *msh, t_token **token)
 {
-		
+	int	i;
+	
+	i = 0;
+	msh->cmd[i] = ft_strdup((*token)->word);
+	while ((*token)->next && (*token)->next->id == WORD)
+	{
+		token = &(*token)->next;
+		msh->cmd[++i] = ft_strdup((*token)->word);
+	}
 }
 
-t_msh	*mshget_last(t_msh *lst)
+void	fill_smaller(t_msh *msh, t_token **token)
+{
+	if ((*token)->next->id == SMALLER)
+	{
+		token = &(*token)->next;
+		msh->here_doc = 1;
+	}
+	if ((*token)->next->id == WORD)
+	{
+		token = &(*token)->next;
+		msh->infile = ft_strdup((*token)->next->word);
+	}
+}
+
+void	fill_bigger(t_msh *msh, t_token **token)
+{
+	if ((*token)->next->id == SMALLER)
+	{
+		token = &(*token)->next;
+		msh->trunc_out = 1;
+	}
+	if ((*token)->next->id == WORD)
+	{
+		token = &(*token)->next;
+		msh->outfile = ft_strdup((*token)->next->word);
+	}
+}
+
+void	fill_msh(t_msh *msh, t_token **token)
+{
+	if ((*token)->id == WORD)
+	{
+		fill_command(msh, token);
+		fill_msh(msh, token);
+	}
+	else if ((*token)->id == SEMICOLON)
+		return ;
+	else if ((*token)->id == SMALLER)
+	{
+		fill_smaller(msh, token);
+		fill_msh(msh, token);
+	}
+	else if ((*token)->id == BIGGER)
+	{
+		fill_bigger(msh, token);
+		fill_msh(msh, token);
+	}
+	else if ((*token)->id == PIPE)
+	{
+		msh->pipe_next = 1;
+		return ;
+	}
+}
+
+t_msh	*mshget_last(t_msh *msh)
 {
 	t_msh	*current;
 
-	if (!lst)
+	if (!msh)
 		return (0);
-	current = lst;
+	current = msh;
 	while (current->next)
 		current = current->next;
 	return (current);
 }
-
 
 void	mshadd_back(t_msh **msh, t_msh *new)
 {
@@ -66,20 +128,20 @@ void	mshadd_back(t_msh **msh, t_msh *new)
 	}
 }
 
-t_msh	*parsing(t_token *token)
+t_msh	*parsing(t_token **token)
 {
 	t_msh	*msh;
 	t_msh	*new;
-	int	i;
+	int		i;
 
 	msh = NULL;
 	i = -1;
-	while (token)
+	while (*token)
 	{
 		new = create_msh(++i);
-		//fill_msh(new, &token);
+		fill_msh(new, token);
 		mshadd_back(&msh, new);
-		token = token->next;
+		token = &(*token)->next;
 	}
 	return (msh);
 }
@@ -102,21 +164,30 @@ void	free_msh(t_msh **msh)
 	}
 }
 
-int	main()
+int	main(void)
 {
 	t_token	*token;
+	t_token *st_token;
 	t_msh	*msh;
-	t_msh	*start;
+	t_msh	*st_msh;
 
-	token = lexing(" aa; <bb> | $cc ");
-	msh = parsing(token);
-	free_token(&token);
-	msh = start;
+
+	token = lexing("< infile ls | cat -e > outfile; echo $PATH");
+	st_token = token;
+	msh = parsing(&token);
+	free_token(&st_token);
+	st_msh = msh;
 	while (msh)
 	{
 		printf("index: %d\n", msh->index);
+		if (msh->cmd)
+		{
+			int	i = -1;
+			while (msh->cmd[++i])
+				printf("%s-", msh->cmd[i]);
+		}
 		msh = msh->next;
 	}
-//	free_msh(&start);
+	free_msh(&st_msh);
 	return (0);
 }

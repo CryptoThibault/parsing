@@ -6,7 +6,7 @@
 /*   By: tchalaou <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/25 13:51:23 by tchalaou          #+#    #+#             */
-/*   Updated: 2024/06/25 16:54:29 by tchalaou         ###   ########.fr       */
+/*   Updated: 2024/06/28 15:20:54 by tchalaou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@ int	is_whitespace(char c)
 int	word_len(char *line, int start)
 {
 	int	len;
-	
+
 	len = 0;
 	while (line[start] && !ft_strchr(" \t\n;<>|$", line[start]))
 	{
@@ -99,11 +99,11 @@ void	tokenadd_back(t_token **token, t_token *new)
 
 t_token	*lexing(char *line)
 {
-	t_token *token;
-	int	i;
-	int	id;
+	t_token	*token;
+	int		i;
+	int		id;
 	char	*word;
-	
+
 	token = NULL;
 	i = -1;
 	while (line[++i])
