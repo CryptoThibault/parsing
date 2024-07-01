@@ -66,9 +66,7 @@ int	fill_token(char **word, char *line, int *i)
 		(*i)++;
 	if (!line[*i])
 		return (0);
-	if (line[*i] == ';')
-		return (SEMICOLON);
-	else if (line[*i] == '<')
+	if (line[*i] == '<')
 		return (SMALLER);
 	else if (line[*i] == '>')
 		return (BIGGER);

@@ -25,7 +25,6 @@ t_msh	*create_msh(int index)
 	msh->outfile = NULL;
 	msh->here_doc = 0;
 	msh->trunc_out = 0;
-	msh->pipe_next = 0;
 	msh->in_fd = -1;
 	msh->out_fd = -1;
 	msh->next = NULL;
@@ -56,7 +55,7 @@ void	fill_smaller(t_msh *msh, t_token **token)
 	if ((*token)->next->id == WORD)
 	{
 		token = &(*token)->next;
-		msh->infile = ft_strdup((*token)->next->word);
+		msh->infile = ft_strdup((*token)->word);
 	}
 }
 
@@ -70,7 +69,7 @@ void	fill_bigger(t_msh *msh, t_token **token)
 	if ((*token)->next->id == WORD)
 	{
 		token = &(*token)->next;
-		msh->outfile = ft_strdup((*token)->next->word);
+		msh->outfile = ft_strdup((*token)->word);
 	}
 }
 
@@ -81,8 +80,6 @@ void	fill_msh(t_msh *msh, t_token **token)
 		fill_command(msh, token);
 		fill_msh(msh, token);
 	}
-	else if ((*token)->id == SEMICOLON)
-		return ;
 	else if ((*token)->id == SMALLER)
 	{
 		fill_smaller(msh, token);
@@ -94,10 +91,7 @@ void	fill_msh(t_msh *msh, t_token **token)
 		fill_msh(msh, token);
 	}
 	else if ((*token)->id == PIPE)
-	{
-		msh->pipe_next = 1;
 		return ;
-	}
 }
 
 t_msh	*mshget_last(t_msh *msh)
@@ -128,7 +122,7 @@ void	mshadd_back(t_msh **msh, t_msh *new)
 	}
 }
 
-t_msh	*parsing(t_token **token)
+t_msh	*parsing(t_token *token)
 {
 	t_msh	*msh;
 	t_msh	*new;
@@ -136,12 +130,12 @@ t_msh	*parsing(t_token **token)
 
 	msh = NULL;
 	i = -1;
-	while (*token)
+	while (token)
 	{
 		new = create_msh(++i);
-		fill_msh(new, token);
+		fill_msh(new, &token);
 		mshadd_back(&msh, new);
-		token = &(*token)->next;
+		token = token->next;
 	}
 	return (msh);
 }
@@ -167,16 +161,14 @@ void	free_msh(t_msh **msh)
 int	main(void)
 {
 	t_token	*token;
-	t_token *st_token;
 	t_msh	*msh;
-	t_msh	*st_msh;
+	t_msh	*start;
 
 
-	token = lexing("< infile ls | cat -e > outfile; echo $PATH");
-	st_token = token;
-	msh = parsing(&token);
-	free_token(&st_token);
-	st_msh = msh;
+	token = lexing("< infile ls | cat -e > outfile | echo $PATH");
+	msh = parsing(token);
+	free_token(&token);
+	start = msh;
 	while (msh)
 	{
 		printf("index: %d\n", msh->index);
@@ -188,6 +180,6 @@ int	main(void)
 		}
 		msh = msh->next;
 	}
-	free_msh(&st_msh);
+	free_msh(&start);
 	return (0);
 }

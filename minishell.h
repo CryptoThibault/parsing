@@ -29,11 +29,10 @@
 # include <limits.h>
 
 # define WORD 1
-# define SEMICOLON 2
-# define SMALLER 3
-# define BIGGER 4
-# define PIPE 5
-# define DOLLAR 6
+# define SMALLER 2
+# define BIGGER 3
+# define PIPE 4
+# define DOLLAR 5
 
 typedef struct	s_var
 {
@@ -56,7 +55,6 @@ typedef struct s_msh
 	char	*outfile;
 	int		here_doc;
 	int		trunc_out;
-	int		pipe_next;
 	int		in_fd;
 	int		out_fd;
 	int		pipefd[2];
@@ -67,7 +65,7 @@ typedef struct s_msh
 t_token	*lexing(char *line);
 void	free_token(t_token **token);
 
-t_msh	*parsing(t_token **token);
+t_msh	*parsing(t_token *token);
 void	free_msh(t_msh **msh);
 
 int		array_size(char **array);
